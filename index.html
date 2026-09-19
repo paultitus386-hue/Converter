@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice Converter • Text to Voice & Voice to Text Studio</title>
+  <meta name="description" content="Production-grade Text-to-Speech, Speech-to-Text, and Recents Storage Web Application. Fully functional on localhost or any static web host." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            accent: {
+              emerald: '#10b981',
+              cyan: '#06b6d4',
+              purple: '#a855f7',
+              amber: '#f59e0b',
+              rose: '#f43f5e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Glow and Blur Effects */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .dark .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+    .glow-tts {
+      box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.25);
+    }
+    .dark .glow-tts {
+      box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.35);
+    }
+    .glow-stt {
+      box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.25);
+    }
+    .dark .glow-stt {
+      box-shadow: 0 0 50px -10px rgba(16, 185, 129, 0.35);
+    }
+    .glow-recents {
+      box-shadow: 0 0 40px -10px rgba(245, 158, 11, 0.25);
+    }
+    .dark .glow-recents {
+      box-shadow: 0 0 50px -10px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Custom range sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: #e2e8f0;
+      outline: none;
+    }
+    .dark input[type=range] {
+      background: #334155;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #6366f1;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 0; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+    .ring-active {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-[#090D16] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased transition-colors duration-200">
+
+  <!-- TOP APP HEADER -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-[#0d1322]/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchSection('tts')">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+          <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-300 dark:to-pink-400 bg-clip-text text-transparent">
+              Voice Converter
+            </h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300/40">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-ping"></span> Live Studio
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Text to Voice • Voice to Text • Session History
+          </p>
+        </div>
+      </div>
+
+      <!-- Center: Section Switcher Pills -->
+      <nav class="hidden md:flex items-center p-1.5 rounded-2xl bg-slate-200/70 dark:bg-slate-800/80 border border-slate-300/60 dark:border-slate-700/60 shadow-inner">
+        <button
+          type="button"
+          id="tab-btn-tts"
+          onclick="switchSection('tts')"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          1. Text to Voice
+        </button>
+
+        <button
+          type="button"
+          id="tab-btn-stt"
+          onclick="switchSection('stt')"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+          </svg>
+          2. Voice to Text
+        </button>
+
+        <button
+          type="button"
+          id="tab-btn-recents"
+          onclick="switchSection('recents')"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          3. Recents / Storage
+          <span id="header-recents-badge" class="px-1.5 py-0.5 rounded-full text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-extrabold">0</span>
+        </button>
+      </nav>
+
+      <!-- Right Controls: View Mode & Theme Toggle -->
+      <div class="flex items-center space-x-2.5">
+        <!-- Layout Switcher: Focused Tab vs All-In-One Dashboard -->
+        <button
+          type="button"
+          id="view-mode-toggle"
+          onclick="toggleViewMode()"
+          title="Toggle between single focused section and all sections view"
+          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm"
+        >
+          <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <span id="view-mode-text">View All 3</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button
+          type="button"
+          onclick="toggleTheme()"
+          aria-label="Toggle theme"
+          class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm"
+        >
+          <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Strip -->
+    <div class="flex md:hidden border-t border-slate-200/80 dark:border-slate-800 px-3 py-2 justify-around bg-slate-50 dark:bg-slate-900">
+      <button onclick="switchSection('tts')" id="mob-tab-tts" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 py-1 px-2 border-b-2 border-indigo-600">
+        🔊 Text to Voice
+      </button>
+      <button onclick="switchSection('stt')" id="mob-tab-stt" class="text-xs font-semibold text-slate-500 dark:text-slate-400 py-1 px-2">
+        🎙️ Voice to Text
+      </button>
+      <button onclick="switchSection('recents')" id="mob-tab-recents" class="text-xs font-semibold text-slate-500 dark:text-slate-400 py-1 px-2">
+        🕒 Recents
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300 max-w-sm px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 backdrop-blur-md">
+      <span id="toast-icon"></span>
+      <p id="toast-msg" class="text-xs font-semibold flex-1"></p>
+    </div>
+
+    <!-- SECTIONS CONTAINER -->
+    <div id="sections-container" class="space-y-8">
+
+      <!-- ============================================================ -->
+      <!-- SECTION 1: TEXT TO VOICE CONVERTER                           -->
+      <!-- ============================================================ -->
+      <section id="section-tts" class="glass-card glow-tts rounded-3xl p-6 sm:p-8 transition-all duration-300">
+        <!-- Top Title Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200/60 dark:border-slate-800/80">
+          <div class="flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Section 1</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-xs text-slate-400">Web Speech API</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Text to Voice Converter
+              </h2>
+            </div>
+          </div>
+
+          <!-- Status Indicator Pill -->
+          <div class="flex items-center gap-2">
+            <span id="tts-status-pill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <span id="tts-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span id="tts-status-text">Ready</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Notification Banner if browser unsupported -->
+        <div id="tts-alert-box" class="hidden mt-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300">
+          <span id="tts-alert-msg"></span>
+        </div>
+
+        <!-- Sample Quick Prompts -->
+        <div class="mt-6 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <span class="text-slate-400 font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Quick Samples:
+          </span>
+          <button onclick="insertTtsSample('welcome')" class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-400 bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 whitespace-nowrap transition-colors">
+            👋 Welcome Message
+          </button>
+          <button onclick="insertTtsSample('story')" class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-400 bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 whitespace-nowrap transition-colors">
+            🦊 Quick Fox Story
+          </button>
+          <button onclick="insertTtsSample('multilingual')" class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-400 bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 whitespace-nowrap transition-colors">
+            🌍 Global Greeting
+          </button>
+        </div>
+
+        <!-- Text Input Area -->
+        <div class="mt-3 relative">
+          <textarea
+            id="tts-input"
+            rows="6"
+            placeholder="Type or paste any text here to speak it with natural voice synthesis..."
+            class="w-full p-4 sm:p-5 text-sm sm:text-base leading-relaxed rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-y shadow-inner"
+          ></textarea>
+
+          <!-- Text Stats Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mt-2 px-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div class="flex items-center space-x-4">
+              <span>Characters: <strong id="tts-char-count" class="text-slate-800 dark:text-white font-mono">0</strong></span>
+              <span>Words: <strong id="tts-word-count" class="text-slate-800 dark:text-white font-mono">0</strong></span>
+              <span>Est. Speech Time: <strong id="tts-time-est" class="text-indigo-600 dark:text-indigo-400 font-mono">0s</strong></span>
+            </div>
+            <button
+              type="button"
+              onclick="clearTtsInput()"
+              class="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-1 transition-colors"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              Clear Text
+            </button>
+          </div>
+        </div>
+
+        <!-- Controls: Language, Voice, Sliders -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5 p-5 rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800/80">
+          
+          <!-- Language Selector -->
+          <div>
+            <label for="tts-language" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+              Language (BCP-47)
+            </label>
+            <div class="relative">
+              <select
+                id="tts-language"
+                onchange="onTtsLanguageChange()"
+                class="w-full px-3.5 py-2.5 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              ></select>
+            </div>
+          </div>
+
+          <!-- Voice Selector -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label for="tts-voice" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                System Voice
+              </label>
+              <span id="tts-voice-count" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">Detecting voices...</span>
+            </div>
+            <div class="relative">
+              <select
+                id="tts-voice"
+                class="w-full px-3.5 py-2.5 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              ></select>
+            </div>
+          </div>
+
+          <!-- Sliders: Speed, Pitch, Volume -->
+          <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            
+            <!-- Speed -->
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+              <div class="flex justify-between text-xs font-bold mb-2">
+                <span class="text-slate-700 dark:text-slate-300">Speech Rate</span>
+                <span id="tts-rate-val" class="font-mono text-indigo-600 dark:text-indigo-400">1.0x</span>
+              </div>
+              <input id="tts-rate" type="range" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateTtsSliders()" class="w-full cursor-pointer" />
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span>0.5x</span><span>1.0x</span><span>2.0x</span>
+              </div>
+            </div>
+
+            <!-- Pitch -->
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+              <div class="flex justify-between text-xs font-bold mb-2">
+                <span class="text-slate-700 dark:text-slate-300">Pitch</span>
+                <span id="tts-pitch-val" class="font-mono text-purple-600 dark:text-purple-400">1.0</span>
+              </div>
+              <input id="tts-pitch" type="range" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateTtsSliders()" class="w-full cursor-pointer" />
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span>0.5</span><span>1.0</span><span>2.0</span>
+              </div>
+            </div>
+
+            <!-- Volume -->
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+              <div class="flex justify-between text-xs font-bold mb-2">
+                <span class="text-slate-700 dark:text-slate-300">Volume</span>
+                <span id="tts-volume-val" class="font-mono text-emerald-600 dark:text-emerald-400">100%</span>
+              </div>
+              <input id="tts-volume" type="range" min="0" max="1" step="0.05" value="1.0" oninput="updateTtsSliders()" class="w-full cursor-pointer" />
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span>0%</span><span>50%</span><span>100%</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Audio Waveform Visualizer Canvas for TTS -->
+        <div id="tts-canvas-container" class="mt-4 p-3 rounded-2xl bg-indigo-950/20 dark:bg-indigo-950/40 border border-indigo-500/20 hidden">
+          <div class="flex items-center justify-between text-xs text-indigo-400 mb-2 font-semibold">
+            <span>Synthesized Speech Output</span>
+            <span class="animate-pulse">● Active Audio</span>
+          </div>
+          <canvas id="tts-canvas" height="40" class="w-full rounded-xl"></canvas>
+        </div>
+
+        <!-- TTS Actions Toolbar -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            id="tts-btn-speak"
+            onclick="speakText()"
+            class="flex-1 min-w-[150px] py-3.5 px-6 rounded-2xl font-bold text-sm bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer"
+          >
+            <svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span>Speak Now</span>
+          </button>
+
+          <button
+            type="button"
+            id="tts-btn-pause"
+            onclick="pauseSpeech()"
+            disabled
+            class="py-3.5 px-5 rounded-2xl font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span>Pause</span>
+          </button>
+
+          <button
+            type="button"
+            id="tts-btn-resume"
+            onclick="resumeSpeech()"
+            class="hidden py-3.5 px-5 rounded-2xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span>Resume</span>
+          </button>
+
+          <button
+            type="button"
+            id="tts-btn-stop"
+            onclick="stopSpeech()"
+            disabled
+            class="py-3.5 px-5 rounded-2xl font-bold text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            <span>Stop</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 2: VOICE TO TEXT CONVERTER                           -->
+      <!-- ============================================================ -->
+      <section id="section-stt" class="glass-card glow-stt rounded-3xl p-6 sm:p-8 transition-all duration-300">
+        <!-- Top Title Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200/60 dark:border-slate-800/80">
+          <div class="flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Section 2</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-xs text-slate-400">SpeechRecognition & Web Audio</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Voice to Text Converter
+              </h2>
+            </div>
+          </div>
+
+          <!-- Status Indicator Pill -->
+          <div class="flex items-center gap-2">
+            <span id="stt-status-pill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <span id="stt-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span id="stt-status-text">Microphone Ready</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Browser Support Alert -->
+        <div id="stt-alert-box" class="hidden mt-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
+          <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <span id="stt-alert-msg" class="flex-1"></span>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="mt-6 max-w-md">
+          <label for="stt-language" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+            Spoken Recognition Dialect
+          </label>
+          <select
+            id="stt-language"
+            class="w-full px-3.5 py-2.5 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+          ></select>
+        </div>
+
+        <!-- Big Mic Centerpiece with Audio Visualizer -->
+        <div class="mt-6 flex flex-col items-center justify-center p-8 rounded-3xl bg-gradient-to-b from-slate-50 to-slate-100/70 dark:from-slate-900/60 dark:to-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 text-center relative overflow-hidden">
+          
+          <!-- Animated Background Glow -->
+          <div id="mic-glow" class="absolute w-44 h-44 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none transition-opacity opacity-0"></div>
+
+          <!-- Pulsing Radar Rings -->
+          <div class="relative flex items-center justify-center">
+            <div id="mic-radar-ring" class="absolute w-28 h-28 rounded-full bg-emerald-500/20 hidden ring-active pointer-events-none"></div>
+
+            <!-- Big Mic Button -->
+            <button
+              type="button"
+              id="stt-mic-btn"
+              onclick="toggleSpeechRecognition()"
+              class="relative z-10 w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 text-white shadow-xl shadow-emerald-500/30 transform active:scale-95 transition-all cursor-pointer focus:outline-none focus:ring-4 focus:ring-emerald-500/40"
+            >
+              <svg id="mic-icon-off" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+              </svg>
+              <svg id="mic-icon-on" class="w-8 h-8 hidden animate-pulse text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+            </button>
+          </div>
+
+          <h3 id="mic-label" class="mt-4 text-sm font-bold text-slate-800 dark:text-slate-100">
+            Click Microphone to Start Listening
+          </h3>
+          <p id="mic-sublabel" class="text-xs text-slate-400 mt-1 max-w-sm">
+            Continuous speech recognition. Speak clearly into your microphone in your chosen language.
+          </p>
+
+          <!-- Live Mic Waveform Canvas -->
+          <div id="stt-canvas-wrap" class="w-full max-w-md mt-5 hidden">
+            <canvas id="stt-canvas" height="40" class="w-full rounded-xl bg-emerald-950/20 dark:bg-emerald-950/50 border border-emerald-500/20"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Interim Transcription Display -->
+        <div id="stt-interim-box" class="mt-5 p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 hidden">
+          <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            Real-time Interim Words:
+          </div>
+          <p id="stt-interim-text" class="text-sm italic text-emerald-900 dark:text-emerald-200 min-h-[24px]">
+            Listening for speech...
+          </p>
+        </div>
+
+        <!-- Final Transcription Result Area -->
+        <div class="mt-5">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Final Transcription
+            </label>
+            <div class="flex items-center space-x-3 text-xs text-slate-400">
+              <span>Chars: <strong id="stt-char-count" class="text-slate-700 dark:text-slate-200 font-mono">0</strong></span>
+              <span>Words: <strong id="stt-word-count" class="text-slate-700 dark:text-slate-200 font-mono">0</strong></span>
+            </div>
+          </div>
+
+          <div
+            id="stt-final-box"
+            tabindex="0"
+            contenteditable="true"
+            placeholder="Your final transcribed text will appear here automatically as you talk..."
+            class="w-full min-h-[140px] max-h-[300px] overflow-y-auto p-4 sm:p-5 text-sm sm:text-base leading-relaxed rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+          ></div>
+        </div>
+
+        <!-- STT Action Buttons -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            id="stt-btn-copy"
+            onclick="copyTranscription()"
+            class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-xs sm:text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          >
+            <svg id="copy-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <span id="copy-btn-text">Copy to Clipboard</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="downloadTranscription()"
+            class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-xs sm:text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Download .TXT</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="clearTranscription()"
+            class="py-3 px-4 rounded-xl font-bold text-xs sm:text-sm border border-slate-200 dark:border-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            <span>Clear</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 3: RECENTS & LOCAL STORAGE                           -->
+      <!-- ============================================================ -->
+      <section id="section-recents" class="glass-card glow-recents rounded-3xl p-6 sm:p-8 transition-all duration-300">
+        <!-- Top Title Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200/60 dark:border-slate-800/80">
+          <div class="flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400">Section 3</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-xs text-slate-400">Client-Side LocalStorage</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                Recents & Session Storage
+                <span id="recents-counter-pill" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">0</span>
+              </h2>
+            </div>
+          </div>
+
+          <!-- Top Actions: Export & Clear All -->
+          <div class="flex items-center space-x-2">
+            <button
+              type="button"
+              onclick="exportSessionsJSON()"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-colors"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Export JSON
+            </button>
+
+            <button
+              type="button"
+              onclick="confirmClearAllSessions()"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 flex items-center gap-1.5 transition-colors"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <!-- Search Bar -->
+          <div class="relative w-full sm:w-80">
+            <input
+              type="text"
+              id="recents-search"
+              oninput="renderSessions()"
+              placeholder="Search past sessions by text..."
+              class="w-full pl-9 pr-4 py-2 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center space-x-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs">
+            <button onclick="setRecentsFilter('all')" id="filter-btn-all" class="px-3 py-1 rounded-lg font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">
+              All
+            </button>
+            <button onclick="setRecentsFilter('tts')" id="filter-btn-tts" class="px-3 py-1 rounded-lg font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              🔊 Text to Voice
+            </button>
+            <button onclick="setRecentsFilter('stt')" id="filter-btn-stt" class="px-3 py-1 rounded-lg font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              🎙️ Voice to Text
+            </button>
+          </div>
+        </div>
+
+        <!-- Sessions List Container -->
+        <div id="recents-list" class="mt-6 space-y-3.5 max-h-[500px] overflow-y-auto pr-1">
+          <!-- Populated by JavaScript -->
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto py-6 border-t border-slate-200/80 dark:border-slate-800/80 text-center text-xs text-slate-400">
+    <p class="font-medium">
+      Voice Converter Studio • Zero-dependency Localhost & Static Web Deployment • Pure Browser Web Speech API
+    </p>
+  </footer>
+
+  <!-- ============================================================ -->
+  <!-- JAVASCRIPT LOGIC ENGINE                                      -->
+  <!-- ============================================================ -->
+  <script>
+    /* ------------------------------------------------------------
+       1. Supported Languages (20 BCP-47)
+    ------------------------------------------------------------ */
+    const LANGUAGES = [
+      { code: 'en-US', name: 'English (US)', flag: '🇺🇸' },
+      { code: 'en-GB', name: 'English (UK)', flag: '🇬🇧' },
+      { code: 'hi-IN', name: 'Hindi', flag: '🇮🇳' },
+      { code: 'kn-IN', name: 'Kannada', flag: '🇮🇳' },
+      { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' },
+      { code: 'te-IN', name: 'Telugu', flag: '🇮🇳' },
+      { code: 'ml-IN', name: 'Malayalam', flag: '🇮🇳' },
+      { code: 'bn-IN', name: 'Bengali', flag: '🇮🇳' },
+      { code: 'mr-IN', name: 'Marathi', flag: '🇮🇳' },
+      { code: 'gu-IN', name: 'Gujarati', flag: '🇮🇳' },
+      { code: 'pa-IN', name: 'Punjabi', flag: '🇮🇳' },
+      { code: 'ur-IN', name: 'Urdu', flag: '🇵🇰' },
+      { code: 'fr-FR', name: 'French', flag: '🇫🇷' },
+      { code: 'de-DE', name: 'German', flag: '🇩🇪' },
+      { code: 'es-ES', name: 'Spanish', flag: '🇪🇸' },
+      { code: 'it-IT', name: 'Italian', flag: '🇮🇹' },
+      { code: 'pt-BR', name: 'Portuguese', flag: '🇧🇷' },
+      { code: 'ja-JP', name: 'Japanese', flag: '🇯🇵' },
+      { code: 'ko-KR', name: 'Korean', flag: '🇰🇷' },
+      { code: 'zh-CN', name: 'Chinese', flag: '🇨🇳' },
+    ];
+
+    /* ------------------------------------------------------------
+       2. Application State & Storage Keys
+    ------------------------------------------------------------ */
+    const STORAGE_KEYS = {
+      SESSIONS: 'voice_converter_sessions',
+      THEME: 'voice_converter_theme',
+      SETTINGS: 'voice_converter_settings',
+    };
+
+    let appState = {
+      activeSection: 'tts', // 'tts', 'stt', 'recents'
+      viewMode: 'focused', // 'focused' (one tab) or 'all' (dashboard)
+      theme: 'dark',
+      recentsFilter: 'all',
+      voices: [],
+      ttsSpeaking: false,
+      sttListening: false,
+      recognitionInstance: null,
+      audioCtx: null,
+      analyser: null,
+      animId: null
+    };
+
+    /* ------------------------------------------------------------
+       3. Initialization
+    ------------------------------------------------------------ */
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      populateLanguageSelects();
+      initVoices();
+      initSpeechRecognition();
+      loadSavedSettings();
+      renderSessions();
+      setupTtsTextStats();
+    });
+
+    /* ------------------------------------------------------------
+       4. Theme Management
+    ------------------------------------------------------------ */
+    function initTheme() {
+      const saved = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
+      setTheme(saved);
+    }
+
+    function toggleTheme() {
+      const next = appState.theme === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+      localStorage.setItem(STORAGE_KEYS.THEME, next);
+      showToast(`Switched to ${next} theme`, 'info');
+    }
+
+    function setTheme(theme) {
+      appState.theme = theme;
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('theme-icon-sun').classList.remove('hidden');
+        document.getElementById('theme-icon-moon').classList.add('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('theme-icon-sun').classList.add('hidden');
+        document.getElementById('theme-icon-moon').classList.remove('hidden');
+      }
+    }
+
+    /* ------------------------------------------------------------
+       5. Section Switching & Layout Mode
+    ------------------------------------------------------------ */
+    function switchSection(secId) {
+      appState.activeSection = secId;
+      if (appState.viewMode === 'focused') {
+        applySectionVisibility();
+      } else {
+        // In 'all' view, scroll smoothly to the target section
+        const el = document.getElementById(`section-${secId}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      updateActiveTabStyles();
+    }
+
+    function applySectionVisibility() {
+      const sections = ['tts', 'stt', 'recents'];
+      sections.forEach(s => {
+        const secEl = document.getElementById(`section-${s}`);
+        if (appState.viewMode === 'all' || appState.activeSection === s) {
+          secEl.classList.remove('hidden');
+        } else {
+          secEl.classList.add('hidden');
+        }
+      });
+    }
+
+    function toggleViewMode() {
+      appState.viewMode = appState.viewMode === 'focused' ? 'all' : 'focused';
+      const btnText = document.getElementById('view-mode-text');
+      if (appState.viewMode === 'all') {
+        btnText.textContent = 'Single Tab View';
+        showToast('Now showing all 3 sections', 'info');
+      } else {
+        btnText.textContent = 'View All 3';
+        showToast(`Focusing on ${appState.activeSection.toUpperCase()}`, 'info');
+      }
+      applySectionVisibility();
+    }
+
+    function updateActiveTabStyles() {
+      const tabs = ['tts', 'stt', 'recents'];
+      tabs.forEach(t => {
+        const deskBtn = document.getElementById(`tab-btn-${t}`);
+        const mobBtn = document.getElementById(`mob-tab-${t}`);
+
+        const isActive = appState.activeSection === t;
+        if (deskBtn) {
+          if (isActive) {
+            deskBtn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm";
+          } else {
+            deskBtn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+          }
+        }
+        if (mobBtn) {
+          if (isActive) {
+            mobBtn.className = "text-xs font-bold text-indigo-600 dark:text-indigo-400 py-1 px-2 border-b-2 border-indigo-600";
+          } else {
+            mobBtn.className = "text-xs font-semibold text-slate-500 dark:text-slate-400 py-1 px-2";
+          }
+        }
+      });
+    }
+
+    /* ------------------------------------------------------------
+       6. Languages Population
+    ------------------------------------------------------------ */
+    function populateLanguageSelects() {
+      const ttsSelect = document.getElementById('tts-language');
+      const sttSelect = document.getElementById('stt-language');
+
+      LANGUAGES.forEach(lang => {
+        const opt1 = new Option(`${lang.flag} ${lang.name} (${lang.code})`, lang.code);
+        const opt2 = new Option(`${lang.flag} ${lang.name} (${lang.code})`, lang.code);
+        ttsSelect.add(opt1);
+        sttSelect.add(opt2);
+      });
+    }
+
+    /* ------------------------------------------------------------
+       7. Text to Voice (TTS) Implementation
+    ------------------------------------------------------------ */
+    function initVoices() {
+      if (!('speechSynthesis' in window)) {
+        showTtsAlert("Web Speech Synthesis API is not supported in this browser.");
+        return;
+      }
+
+      function loadVoices() {
+        const vList = window.speechSynthesis.getVoices();
+        if (vList && vList.length > 0) {
+          appState.voices = vList;
+          populateVoicesDropdown();
+        }
+      }
+
+      loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+    }
+
+    function populateVoicesDropdown() {
+      const voiceSelect = document.getElementById('tts-voice');
+      const countLabel = document.getElementById('tts-voice-count');
+      const selectedLang = document.getElementById('tts-language').value;
+      const langPrefix = selectedLang.split('-')[0].toLowerCase();
+
+      voiceSelect.innerHTML = '';
+
+      if (appState.voices.length === 0) {
+        voiceSelect.add(new Option('No voices detected', ''));
+        countLabel.textContent = '0 voices';
+        return;
+      }
+
+      const matching = appState.voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix));
+      countLabel.textContent = `${matching.length} voice${matching.length === 1 ? '' : 's'} for language`;
+
+      if (matching.length > 0) {
+        const groupMatch = document.createElement('optgroup');
+        groupMatch.label = 'Matching Selected Language';
+        matching.forEach(v => {
+          groupMatch.appendChild(new Option(`${v.name} (${v.lang})${v.default ? ' — Default' : ''}`, v.voiceURI));
+        });
+        voiceSelect.appendChild(groupMatch);
+      }
+
+      const groupAll = document.createElement('optgroup');
+      groupAll.label = 'All Available System Voices';
+      appState.voices.forEach(v => {
+        groupAll.appendChild(new Option(`${v.name} (${v.lang})`, v.voiceURI));
+      });
+      voiceSelect.appendChild(groupAll);
+    }
+
+    function onTtsLanguageChange() {
+      populateVoicesDropdown();
+      saveSettings();
+    }
+
+    function setupTtsTextStats() {
+      const input = document.getElementById('tts-input');
+      input.addEventListener('input', updateTtsStats);
+    }
+
+    function updateTtsStats() {
+      const text = document.getElementById('tts-input').value;
+      const charCount = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      
+      document.getElementById('tts-char-count').textContent = charCount;
+      document.getElementById('tts-word-count').textContent = words;
+
+      // Est. speech time ~ 130 words per minute at 1.0x rate
+      const rate = parseFloat(document.getElementById('tts-rate').value) || 1.0;
+      const seconds = words > 0 ? Math.ceil((words / (130 * rate)) * 60) : 0;
+      document.getElementById('tts-time-est').textContent = `${seconds}s`;
+    }
+
+    function updateTtsSliders() {
+      const rate = parseFloat(document.getElementById('tts-rate').value);
+      const pitch = parseFloat(document.getElementById('tts-pitch').value);
+      const volume = parseFloat(document.getElementById('tts-volume').value);
+
+      document.getElementById('tts-rate-val').textContent = `${rate.toFixed(1)}x`;
+      document.getElementById('tts-pitch-val').textContent = `${pitch.toFixed(1)}`;
+      document.getElementById('tts-volume-val').textContent = `${Math.round(volume * 100)}%`;
+
+      updateTtsStats();
+      saveSettings();
+    }
+
+    function insertTtsSample(type) {
+      const samples = {
+        welcome: "Hello and welcome to Voice Converter! You can convert any text into natural sounding voice, or speak into your microphone to generate accurate transcriptions.",
+        story: "The quick brown fox jumps over the lazy dog under a canopy of vibrant autumn trees, while the birds sing sweet melodies in the crisp morning air.",
+        multilingual: "Bonjour! Hola! Guten Tag! Namaste! Konnichiwa! Voice Converter supports multiple global languages seamlessly."
+      };
+      document.getElementById('tts-input').value = samples[type] || '';
+      updateTtsStats();
+      showToast("Sample text inserted", "info");
+    }
+
+    function clearTtsInput() {
+      stopSpeech();
+      document.getElementById('tts-input').value = '';
+      updateTtsStats();
+    }
+
+    function speakText() {
+      if (!('speechSynthesis' in window)) {
+        showTtsAlert("Speech synthesis is not supported on this browser.");
+        return;
+      }
+
+      const text = document.getElementById('tts-input').value.trim();
+      if (!text) {
+        showToast("Please enter some text to speak!", "warning");
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const rate = parseFloat(document.getElementById('tts-rate').value);
+      const pitch = parseFloat(document.getElementById('tts-pitch').value);
+      const volume = parseFloat(document.getElementById('tts-volume').value);
+      const voiceURI = document.getElementById('tts-voice').value;
+      const lang = document.getElementById('tts-language').value;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = rate;
+      utterance.pitch = pitch;
+      utterance.volume = volume;
+      utterance.lang = lang;
+
+      const matchedVoice = appState.voices.find(v => v.voiceURI === voiceURI);
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
+      }
+
+      utterance.onstart = () => {
+        appState.ttsSpeaking = true;
+        setTtsStatus('speaking', 'Speaking...');
+        document.getElementById('tts-btn-pause').disabled = false;
+        document.getElementById('tts-btn-stop').disabled = false;
+        document.getElementById('tts-canvas-container').classList.remove('hidden');
+        startTtsCanvasAnim();
+      };
+
+      utterance.onpause = () => {
+        setTtsStatus('paused', 'Paused');
+        document.getElementById('tts-btn-pause').classList.add('hidden');
+        document.getElementById('tts-btn-resume').classList.remove('hidden');
+      };
+
+      utterance.onresume = () => {
+        setTtsStatus('speaking', 'Speaking...');
+        document.getElementById('tts-btn-resume').classList.add('hidden');
+        document.getElementById('tts-btn-pause').classList.remove('hidden');
+      };
+
+      utterance.onend = () => {
+        finishSpeech(text, lang, matchedVoice ? matchedVoice.name : 'Default', rate, pitch, volume);
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+          console.error('Speech error:', e);
+          showToast("Speech synthesis encountered an error", "error");
+        }
+        resetTtsUi();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function pauseSpeech() {
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+      }
+    }
+
+    function resumeSpeech() {
+      if (window.speechSynthesis && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    }
+
+    function stopSpeech() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      resetTtsUi();
+    }
+
+    function finishSpeech(text, lang, voiceName, rate, pitch, volume) {
+      resetTtsUi();
+      saveSession({
+        type: 'tts',
+        text: text,
+        language: lang,
+        voiceName: voiceName,
+        speed: rate,
+        pitch: pitch,
+        volume: volume
+      });
+      showToast("Speech completed and saved to Recents!", "success");
+    }
+
+    function resetTtsUi() {
+      appState.ttsSpeaking = false;
+      setTtsStatus('ready', 'Ready');
+      document.getElementById('tts-btn-pause').disabled = true;
+      document.getElementById('tts-btn-pause').classList.remove('hidden');
+      document.getElementById('tts-btn-resume').classList.add('hidden');
+      document.getElementById('tts-btn-stop').disabled = true;
+      document.getElementById('tts-canvas-container').classList.add('hidden');
+      stopTtsCanvasAnim();
+    }
+
+    function setTtsStatus(state, text) {
+      const pill = document.getElementById('tts-status-pill');
+      const dot = document.getElementById('tts-status-dot');
+      const label = document.getElementById('tts-status-text');
+
+      label.textContent = text;
+      if (state === 'speaking') {
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-400/40 animate-pulse";
+        dot.className = "w-2 h-2 rounded-full bg-indigo-500";
+      } else if (state === 'paused') {
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-400/40";
+        dot.className = "w-2 h-2 rounded-full bg-amber-500";
+      } else {
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700";
+        dot.className = "w-2 h-2 rounded-full bg-slate-400";
+      }
+    }
+
+    function showTtsAlert(msg) {
+      const box = document.getElementById('tts-alert-box');
+      document.getElementById('tts-alert-msg').textContent = msg;
+      box.classList.remove('hidden');
+    }
+
+    // TTS Output Wave Canvas Animation
+    let ttsAnimFrame = null;
+    function startTtsCanvasAnim() {
+      const canvas = document.getElementById('tts-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let step = 0;
+
+      function render() {
+        step += 0.08;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#818cf8';
+        ctx.beginPath();
+        
+        const width = canvas.width;
+        const height = canvas.height;
+        for (let x = 0; x < width; x += 4) {
+          const y = height / 2 + Math.sin(x * 0.05 + step) * Math.cos(x * 0.02 + step * 0.5) * (height * 0.35);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ttsAnimFrame = requestAnimationFrame(render);
+      }
+      ttsAnimFrame = requestAnimationFrame(render);
+    }
+
+    function stopTtsCanvasAnim() {
+      if (ttsAnimFrame) {
+        cancelAnimationFrame(ttsAnimFrame);
+        ttsAnimFrame = null;
+      }
+    }
+
+    /* ------------------------------------------------------------
+       8. Voice to Text (STT) Implementation
+    ------------------------------------------------------------ */
+    let accumulatedFinalText = '';
+
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        const box = document.getElementById('stt-alert-box');
+        document.getElementById('stt-alert-msg').textContent = 
+          "Speech recognition is not natively supported in this browser. For voice-to-text, please open this app in Google Chrome or Microsoft Edge.";
+        box.classList.remove('hidden');
+        document.getElementById('stt-mic-btn').disabled = true;
+        document.getElementById('stt-mic-btn').classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function toggleSpeechRecognition() {
+      if (appState.sttListening) {
+        stopSpeechRecognition();
+      } else {
+        startSpeechRecognition();
+      }
+    }
+
+    function startSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showToast("Speech recognition not supported in this browser.", "error");
+        return;
+      }
+
+      const lang = document.getElementById('stt-language').value;
+
+      try {
+        const rec = new SpeechRecognition();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = lang;
+
+        rec.onstart = () => {
+          appState.sttListening = true;
+          setSttUiListening(true);
+          startMicVisualizer();
+          showToast("Microphone active! Speak now...", "info");
+        };
+
+        rec.onresult = (event) => {
+          let interim = '';
+          let finalBatch = '';
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalBatch += transcript + ' ';
+            } else {
+              interim += transcript;
+            }
+          }
+
+          if (finalBatch) {
+            accumulatedFinalText = (accumulatedFinalText + ' ' + finalBatch).trim();
+            const box = document.getElementById('stt-final-box');
+            box.textContent = accumulatedFinalText;
+            updateSttStats();
+          }
+
+          const interimBox = document.getElementById('stt-interim-box');
+          const interimText = document.getElementById('stt-interim-text');
+          if (interim) {
+            interimBox.classList.remove('hidden');
+            interimText.textContent = interim;
+          } else {
+            interimBox.classList.add('hidden');
+          }
+        };
+
+        rec.onerror = (event) => {
+          console.error("Speech Recognition Error:", event.error);
+          if (event.error === 'not-allowed') {
+            showToast("Microphone permission was denied. Please allow microphone access.", "error");
+          } else if (event.error === 'no-speech') {
+            // Waiting for speech
+          } else {
+            showToast(`Speech recognition: ${event.error}`, "warning");
+          }
+          stopSpeechRecognition();
+        };
+
+        rec.onend = () => {
+          if (appState.sttListening) {
+            stopSpeechRecognition();
+          }
+        };
+
+        appState.recognitionInstance = rec;
+        rec.start();
+      } catch (err) {
+        console.error("Failed to start recognition:", err);
+        showToast("Could not start microphone recognition", "error");
+        stopSpeechRecognition();
+      }
+    }
+
+    function stopSpeechRecognition() {
+      if (appState.recognitionInstance) {
+        try {
+          appState.recognitionInstance.stop();
+        } catch(e) {}
+        appState.recognitionInstance = null;
+      }
+      appState.sttListening = false;
+      setSttUiListening(false);
+      stopMicVisualizer();
+
+      document.getElementById('stt-interim-box').classList.add('hidden');
+
+      const finalText = document.getElementById('stt-final-box').textContent.trim();
+      if (finalText) {
+        const lang = document.getElementById('stt-language').value;
+        saveSession({
+          type: 'stt',
+          transcription: finalText,
+          language: lang
+        });
+        showToast("Transcription saved to Recents!", "success");
+      }
+    }
+
+    function setSttUiListening(isListening) {
+      const pill = document.getElementById('stt-status-pill');
+      const dot = document.getElementById('stt-status-dot');
+      const label = document.getElementById('stt-status-text');
+      const micBtn = document.getElementById('stt-mic-btn');
+      const radar = document.getElementById('mic-radar-ring');
+      const glow = document.getElementById('mic-glow');
+      const iconOff = document.getElementById('mic-icon-off');
+      const iconOn = document.getElementById('mic-icon-on');
+      const micLabel = document.getElementById('mic-label');
+
+      if (isListening) {
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-400/40 animate-pulse";
+        dot.className = "w-2 h-2 rounded-full bg-rose-500";
+        label.textContent = "Listening Live...";
+
+        micBtn.className = "relative z-10 w-20 h-20 rounded-full flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-500/40 transform active:scale-95 transition-all cursor-pointer ring-4 ring-rose-400/50";
+        iconOff.classList.add('hidden');
+        iconOn.classList.remove('hidden');
+        radar.classList.remove('hidden');
+        glow.classList.remove('opacity-0');
+        glow.classList.add('opacity-100');
+        micLabel.textContent = "Listening... Click to Finish";
+      } else {
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700";
+        dot.className = "w-2 h-2 rounded-full bg-slate-400";
+        label.textContent = "Microphone Ready";
+
+        micBtn.className = "relative z-10 w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 text-white shadow-xl shadow-emerald-500/30 transform active:scale-95 transition-all cursor-pointer";
+        iconOff.classList.remove('hidden');
+        iconOn.classList.add('hidden');
+        radar.classList.add('hidden');
+        glow.classList.add('opacity-0');
+        glow.classList.remove('opacity-100');
+        micLabel.textContent = "Click Microphone to Start Listening";
+      }
+    }
+
+    function updateSttStats() {
+      const text = document.getElementById('stt-final-box').textContent.trim();
+      document.getElementById('stt-char-count').textContent = text.length;
+      document.getElementById('stt-word-count').textContent = text ? text.split(/\s+/).length : 0;
+    }
+
+    function copyTranscription() {
+      const text = document.getElementById('stt-final-box').textContent.trim();
+      if (!text) {
+        showToast("Nothing to copy yet!", "warning");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        document.getElementById('copy-btn-text').textContent = 'Copied!';
+        showToast("Transcription copied to clipboard", "success");
+        setTimeout(() => {
+          document.getElementById('copy-btn-text').textContent = 'Copy to Clipboard';
+        }, 2000);
+      });
+    }
+
+    function downloadTranscription() {
+      const text = document.getElementById('stt-final-box').textContent.trim();
+      if (!text) {
+        showToast("No transcription available to download!", "warning");
+        return;
+      }
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `voice-transcription-${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("Downloaded .TXT file!", "success");
+    }
+
+    function clearTranscription() {
+      if (appState.sttListening) stopSpeechRecognition();
+      accumulatedFinalText = '';
+      document.getElementById('stt-final-box').textContent = '';
+      updateSttStats();
+      showToast("Transcription cleared", "info");
+    }
+
+    // Web Audio Microphone Frequency Visualizer
+    let micStream = null;
+    let micAnimId = null;
+
+    async function startMicVisualizer() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micStream = stream;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        source.connect(analyser);
+
+        const canvasWrap = document.getElementById('stt-canvas-wrap');
+        const canvas = document.getElementById('stt-canvas');
+        canvasWrap.classList.remove('hidden');
+        const ctx = canvas.getContext('2d');
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        function draw() {
+          micAnimId = requestAnimationFrame(draw);
+          analyser.getByteFrequencyData(dataArray);
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const barWidth = (canvas.width / bufferLength) * 1.5;
+          let x = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            const barHeight = (dataArray[i] / 255) * canvas.height;
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
+            x += barWidth;
+          }
+        }
+        draw();
+      } catch (err) {
+        // Fallback: visualizer hidden if mic audio stream cannot be hooked to canvas
+      }
+    }
+
+    function stopMicVisualizer() {
+      if (micAnimId) {
+        cancelAnimationFrame(micAnimId);
+        micAnimId = null;
+      }
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
+      document.getElementById('stt-canvas-wrap').classList.add('hidden');
+    }
+
+    /* ------------------------------------------------------------
+       9. Recents & LocalStorage Management
+    ------------------------------------------------------------ */
+    function getSessions() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.SESSIONS);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveSession(session) {
+      const sessions = getSessions();
+      const newSession = {
+        id: 'sess_' + Date.now(),
+        timestamp: new Date().toISOString(),
+        ...session
+      };
+
+      // Deduplicate immediate repeat
+      if (sessions.length > 0) {
+        const last = sessions[0];
+        if (last.type === newSession.type && 
+           ((last.text && last.text === newSession.text) || (last.transcription && last.transcription === newSession.transcription))) {
+          return;
+        }
+      }
+
+      const updated = [newSession, ...sessions].slice(0, 20);
+      try {
+        localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(updated));
+      } catch (e) {}
+
+      renderSessions();
+    }
+
+    function renderSessions() {
+      const sessions = getSessions();
+      const listEl = document.getElementById('recents-list');
+      const badge = document.getElementById('header-recents-badge');
+      const counterPill = document.getElementById('recents-counter-pill');
+      const searchVal = (document.getElementById('recents-search').value || '').toLowerCase();
+
+      badge.textContent = sessions.length;
+      counterPill.textContent = sessions.length;
+
+      let filtered = sessions;
+      if (appState.recentsFilter !== 'all') {
+        filtered = filtered.filter(s => s.type === appState.recentsFilter);
+      }
+      if (searchVal) {
+        filtered = filtered.filter(s => {
+          const content = (s.text || s.transcription || '').toLowerCase();
+          return content.includes(searchVal);
+        });
+      }
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12 px-4 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+            <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center text-slate-400 mb-3">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">No recent sessions found</h4>
+            <p class="text-xs text-slate-400 mt-1 max-w-xs">
+              ${searchVal ? 'No history matching your search query.' : 'Your previous voice conversions will appear here automatically.'}
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(sess => {
+        const isTTS = sess.type === 'tts';
+        const preview = isTTS ? sess.text : sess.transcription;
+        const timeAgo = formatTimestamp(sess.timestamp);
+
+        return `
+          <div class="group p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 hover:border-amber-400/60 dark:hover:border-amber-500/50 hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bold ${
+                  isTTS
+                    ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300'
+                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300'
+                }">
+                  ${isTTS ? '🔊 Text to Voice' : '🎙️ Voice to Text'}
+                </span>
+                <span class="text-xs font-medium text-slate-400">
+                  🌐 ${sess.language || 'en-US'}
+                </span>
+              </div>
+              <span class="text-[11px] font-medium text-slate-400">
+                ${timeAgo}
+              </span>
+            </div>
+
+            <p class="mt-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-3">
+              "${escapeHtml(preview)}"
+            </p>
+
+            ${isTTS && sess.voiceName ? `
+              <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-3">
+                <span>Voice: <strong>${escapeHtml(sess.voiceName)}</strong></span>
+                <span>Speed: <strong>${sess.speed}x</strong></span>
+                <span>Pitch: <strong>${sess.pitch}</strong></span>
+              </div>
+            ` : ''}
+
+            <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <button
+                type="button"
+                onclick="restoreSession('${sess.id}')"
+                class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1.5 cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Restore Session
+              </button>
+
+              <div class="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onclick="copySessionText('${sess.id}')"
+                  title="Copy session text"
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </button>
+                <button
+                  type="button"
+                  onclick="deleteSession('${sess.id}')"
+                  title="Delete session"
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setRecentsFilter(type) {
+      appState.recentsFilter = type;
+      ['all', 'tts', 'stt'].forEach(f => {
+        const btn = document.getElementById(`filter-btn-${f}`);
+        if (f === type) {
+          btn.className = "px-3 py-1 rounded-lg font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs";
+        } else {
+          btn.className = "px-3 py-1 rounded-lg font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+        }
+      });
+      renderSessions();
+    }
+
+    function restoreSession(id) {
+      const sessions = getSessions();
+      const sess = sessions.find(s => s.id === id);
+      if (!sess) return;
+
+      if (sess.type === 'tts') {
+        switchSection('tts');
+        document.getElementById('tts-input').value = sess.text || '';
+        if (sess.language) document.getElementById('tts-language').value = sess.language;
+        if (sess.speed) {
+          document.getElementById('tts-rate').value = sess.speed;
+        }
+        if (sess.pitch) {
+          document.getElementById('tts-pitch').value = sess.pitch;
+        }
+        if (sess.volume !== undefined) {
+          document.getElementById('tts-volume').value = sess.volume;
+        }
+        updateTtsSliders();
+        populateVoicesDropdown();
+        if (sess.voiceName) {
+          const match = appState.voices.find(v => v.name === sess.voiceName);
+          if (match) document.getElementById('tts-voice').value = match.voiceURI;
+        }
+        showToast("Text-to-Voice session restored!", "success");
+      } else {
+        switchSection('stt');
+        accumulatedFinalText = sess.transcription || '';
+        document.getElementById('stt-final-box').textContent = accumulatedFinalText;
+        if (sess.language) document.getElementById('stt-language').value = sess.language;
+        updateSttStats();
+        showToast("Voice-to-Text session restored!", "success");
+      }
+    }
+
+    function copySessionText(id) {
+      const sess = getSessions().find(s => s.id === id);
+      if (!sess) return;
+      const text = sess.text || sess.transcription || '';
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Session text copied!", "success");
+      });
+    }
+
+    function deleteSession(id) {
+      const sessions = getSessions().filter(s => s.id !== id);
+      localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(sessions));
+      renderSessions();
+      showToast("Session removed", "info");
+    }
+
+    function confirmClearAllSessions() {
+      if (confirm("Are you sure you want to clear all stored sessions from your browser?")) {
+        localStorage.removeItem(STORAGE_KEYS.SESSIONS);
+        renderSessions();
+        showToast("All stored sessions cleared", "info");
+      }
+    }
+
+    function exportSessionsJSON() {
+      const sessions = getSessions();
+      if (sessions.length === 0) {
+        showToast("No sessions to export", "warning");
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessions, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `voice-converter-history-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("Exported history to JSON!", "success");
+    }
+
+    function saveSettings() {
+      const settings = {
+        ttsLang: document.getElementById('tts-language').value,
+        sttLang: document.getElementById('stt-language').value,
+        rate: document.getElementById('tts-rate').value,
+        pitch: document.getElementById('tts-pitch').value,
+        volume: document.getElementById('tts-volume').value,
+      };
+      try {
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+      } catch(e) {}
+    }
+
+    function loadSavedSettings() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (s.ttsLang) document.getElementById('tts-language').value = s.ttsLang;
+        if (s.sttLang) document.getElementById('stt-language').value = s.sttLang;
+        if (s.rate) document.getElementById('tts-rate').value = s.rate;
+        if (s.pitch) document.getElementById('tts-pitch').value = s.pitch;
+        if (s.volume) document.getElementById('tts-volume').value = s.volume;
+        updateTtsSliders();
+      } catch(e) {}
+    }
+
+    /* ------------------------------------------------------------
+       10. Utility Functions
+    ------------------------------------------------------------ */
+    function formatTimestamp(isoStr) {
+      try {
+        const d = new Date(isoStr);
+        const now = new Date();
+        const diffMs = now - d;
+        const diffMins = Math.floor(diffMs / 60000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const isToday = d.toDateString() === now.toDateString();
+        const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return isToday ? `Today, ${time}` : `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${time}`;
+      } catch(e) {
+        return 'Recent';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    let toastTimer = null;
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-msg');
+
+      text.textContent = msg;
+
+      if (type === 'success') {
+        toast.className = "fixed bottom-6 right-6 z-50 transition-all duration-300 max-w-sm px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 backdrop-blur-md bg-emerald-50/90 dark:bg-emerald-950/90 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200";
+        icon.innerHTML = '<svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      } else if (type === 'error') {
+        toast.className = "fixed bottom-6 right-6 z-50 transition-all duration-300 max-w-sm px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 backdrop-blur-md bg-rose-50/90 dark:bg-rose-950/90 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200";
+        icon.innerHTML = '<svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+      } else if (type === 'warning') {
+        toast.className = "fixed bottom-6 right-6 z-50 transition-all duration-300 max-w-sm px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 backdrop-blur-md bg-amber-50/90 dark:bg-amber-950/90 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200";
+        icon.innerHTML = '<svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+      } else {
+        toast.className = "fixed bottom-6 right-6 z-50 transition-all duration-300 max-w-sm px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 backdrop-blur-md bg-indigo-50/90 dark:bg-indigo-950/90 border-indigo-300 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200";
+        icon.innerHTML = '<svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+      }
+
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
