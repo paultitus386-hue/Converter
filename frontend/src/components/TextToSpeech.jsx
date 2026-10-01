@@ -24,7 +24,8 @@ import {
   isMobileDevice,
   unlockMobileAudio,
   retainUtterance,
-  isSpeechSynthesisSupported
+  isSpeechSynthesisSupported,
+  isIOS
 } from '../utils/mobileAudioHelper';
 
 export default function TextToSpeech({
@@ -93,9 +94,25 @@ export default function TextToSpeech({
     window.addEventListener('touchstart', handleTouchUnlock, { once: true, passive: true });
     window.addEventListener('click', handleTouchUnlock, { once: true, passive: true });
 
+    // iOS specific: attempt initial audio unlock on mount
+    if (isIOS()) {
+      const attemptIOSTouchUnlock = () => {
+        unlockMobileAudio();
+        // Remove listener after first attempt
+        window.removeEventListener('touchstart', attemptIOSTouchUnlock);
+        window.removeEventListener('click', attemptIOSTouchUnlock);
+      };
+      window.addEventListener('touchstart', attemptIOSTouchUnlock, { once: true, passive: true });
+      window.addEventListener('click', attemptIOSTouchUnlock, { once: true, passive: true });
+    }
+
     return () => {
       window.removeEventListener('touchstart', handleTouchUnlock);
       window.removeEventListener('click', handleTouchUnlock);
+      if (isIOS()) {
+        window.removeEventListener('touchstart', attemptIOSTouchUnlock);
+        window.removeEventListener('click', attemptIOSTouchUnlock);
+      }
       if (window.speechSynthesis) {
         try {
           window.speechSynthesis.cancel();
@@ -104,7 +121,7 @@ export default function TextToSpeech({
         }
       }
     };
-  }, []);
+  }, [isSpeechSynthesisSupported, isIOS]);
 
   // Automatic language understanding for foreign text
   useEffect(() => {
